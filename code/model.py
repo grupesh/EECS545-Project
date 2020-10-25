@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch
 from torch.nn import init
 from collections import OrderedDict
-import torch.nn.functional as F
 def init_weights(net, init_type='normal', mean = 0.0, init_gain=0.02):
     """Initialize network weights.
     Parameters:
@@ -51,5 +50,5 @@ class FC_net(nn.Module):
 
     def forward(self, x):
         x = torch.squeeze(x)
-        out = F.sigmoid(self.net(x))
+        out = torch.sigmoid(self.net(x))
         return out
