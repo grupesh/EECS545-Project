@@ -45,7 +45,7 @@ class FC_net(nn.Module):
             ('relu2', nn.ReLU()),
             ('fc3', nn.Linear(32, 1)),
             ('dp3', nn.Dropout(p=0.6))
-        ]))
+        ]))	# in original paper, they don't use relu in second fc layer, it's weird to me why they don't use relu
         init_weights(self.net, init_type='kaiming', mean=0, init_gain=0.02)
 
     def forward(self, x):
