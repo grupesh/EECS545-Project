@@ -47,19 +47,18 @@ class fcnet_trainer:
         self.model.train()
         for i in range(self.num_epochs):
             start_t = time.time()
-            self.optimizer.zero_grad()	# for only one batch, it's fine now, but this command needs to go inside the second loop
             train_loader = fcnet_loader(norm_path= self.norm_path,
                                        abnorm_path= self.abnorm_path,
                                        test_path= None,
                                        is_train= True,
                                        batch_size= self.batch_size)
-            train_data = train_loader.load()	# not sure why you're redefining dataloader in every epoch, to shuffle ? (you could use shuffle = True in dataloader)
+            train_data = train_loader.load()
             # only one batch
             for iter_num, batch in enumerate(train_data):
+                self.optimizer.zero_grad()
                 for key in batch:
                     # print('key: {}, maximum value: {}'.format(key, torch.max(batch[key]).item()))
                     batch[key] = batch[key].to(self.device)
-		# should have self.optimizer.zero_grad() here
                 norm_scores = self.model.forward(batch['normal'])
                 abnorm_scores = self.model.forward(batch['abnormal'])
                 loss = self.my_criterion(norm_scores= norm_scores,
@@ -67,7 +66,7 @@ class fcnet_trainer:
                 Loss_history.append(loss.item())
                 loss.backward()
                 self.optimizer.step()
-                self.lr_scheduler.step(loss) # need to indent this out to num_epochs loop?
+                self.lr_scheduler.step(loss)
             end_t = time.time()
             print('(Epoch {} / {}) train loss: {:.4f} time per epoch: {:.1f}s current lr: {}'.format(
                     i + 1, self.num_epochs, Loss_history[i], end_t - start_t,
