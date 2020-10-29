@@ -1,8 +1,9 @@
 import os
 import numpy as np
 import cv2
+import torch
 
-def get_test_annotations(f_path):
+def gen_annotations(f_path):
     """
     Input:
     'f_path' : location of txt file that contains segment wise annotations for test dataset
@@ -25,7 +26,7 @@ def get_test_annotations(f_path):
         # print(file_name)
         category_name = line.split(' ')[2]
         # print(category_name)
-	# video_path is location of video files in database
+	    # video_path is location of video files in database
         video_path = 'G:/Shared drives/EECS 545 - ML Project/data/Video_files/'
         if category_name in ["Arson", "Arrest", "Abuse", "Assault"]:
             folder_name = 'Anomaly-Videos-Part-1/' + category_name + '/'
@@ -138,9 +139,9 @@ def count_frames_manual(video):
 
 if __name__ == '__main__':
     f_path = os.path.join(os.getcwd(),"..",'Anomaly_Detection_splits','Temporal_Anomaly_Annotation_for_Testing_Videos.txt')
-    test_annotations = get_test_annotations(f_path)
+    test_annotations = gen_annotations(f_path)
     print('Sample entry in the list : ', test_annotations[16])
     # save test_annotations to saved_data folder
     write_path = os.path.join(os.getcwd(),"..",'saved_data','test_annotations.pt')
-    if not os.exists(write_path):
+    if not os.path.exists(write_path):
         torch.save(test_annotations,write_path)
