@@ -58,7 +58,7 @@ class fcnet_trainer:
         #optim_threshold = threshold[optim_idx]
         #print(scores.shape)
         #print(labels.shape)
-        roc_auc = metrics.roc_auc_score(labels.detach().numpy(), scores.detach().numpy())
+        roc_auc = metrics.roc_auc_score(labels.detach().cpu().numpy(), scores.detach().cpu().numpy())
         #optim_fpr = fpr[optim_idx]
         #optim_tpr = tpr[optim_idx]
         return roc_auc
