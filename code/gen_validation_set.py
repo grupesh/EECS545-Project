@@ -2,6 +2,7 @@ import os
 import random
 from gen_test_annotations import gen_annotations
 import torch
+from clean_vald_annotations_file import clean_labels
 
 def define_validation_set(f_path):
   """
@@ -36,7 +37,10 @@ if __name__ == '__main__':
     test_path = os.path.join(os.getcwd(),'..','Anomaly_Detection_splits/Temporal_Anomaly_Annotation_for_Testing_Videos.txt')
     vald_set, filename = define_validation_set(test_path)
     print('Samples defined, generating list for easy access')
-    vald_set_final = gen_annotations(filename)
+    print('Cleaning labels')
+    clean_labels()
+    filename_new = filename.split('.txt')[0] + '_clean.txt'
+    vald_set_final = gen_annotations(filename_new)
     write_path = os.path.join(os.getcwd(),'..','saved_data/validation_annotations.pt')
     torch.save(vald_set_final,write_path)
     print('Generated list saved!')
