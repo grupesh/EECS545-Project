@@ -83,30 +83,36 @@ class anomaly_detect_loader(data.Dataset):
         elif self.is_vald:
             for i in range(len(self.vald_choice)):
                 category = self.vald_list[self.vald_choice[i]]['category']
+                filename_split = self.vald_list[self.vald_choice[i]]['file_path'].split('Video_files')
                 if category == 'Normal':
-                    filename_split = self.vald_list[self.vald_choice[i]]['file_path'].split('Video_files')
                     filename = filename_split[0] + 'features' + filename_split[1]
                 else:
-                    filename_split = self.vald_list[self.vald_choice[i]]['file_path'].split('Video_files')
                     filename = filename_split[0] + 'features/' + category + '/' + category + filename_split[1].split(category)[2]
                 vald_feature = filename.split('.')[0] + '.pt'
                 print('loading validation feature from: ', vald_feature)
                 anomaly_segments = self.vald_list[self.vald_choice[i]]['anomaly_frames']
-                vald_label = torch.zeros(32)
+                vald_label = torch.zeros(32,1)
                 vald_label[anomaly_segments] = 1
                 self.meta['vald'].append(torch.load(vald_feature))
                 self.meta['labels'].append(vald_label)
-                #print(self.meta['labels'])
             self.meta['vald'] = torch.stack(self.meta['vald']).reshape(-1, self.meta['vald'][0].shape[-1])
             self.meta['labels'] = torch.stack(self.meta['labels']).reshape(-1, self.meta['labels'][0].shape[-1])
             print('shape of validation features: ', self.meta['vald'].shape)
             print('shape of validation labels: ', self.meta['labels'].shape)
         else:
             for i in range(len(self.test_choice)):
-                test_feature = self.test_list[self.test_choice[i]]['file_path'].split('.')[0] + '.pt'
+                category = self.test_list[self.test_choice[i]]['category']
+                filename_split = self.test_list[self.test_choice[i]]['file_path'].split('Video_files')
+                if category == 'Normal':
+                    filename = filename_split[0] + 'features' + filename_split[1]
+                else:
+                    filename = filename_split[0] + 'features/' + category + '/' + category + \
+                               filename_split[1].split(category)[2]
+
+                test_feature = filename.split('.')[0] + '.pt'
                 print('loading test feature from: ', test_feature)
                 anomaly_segments = self.test_list[self.test_choice[i]]['anomaly_frames']
-                test_label = torch.zeros(32)
+                test_label = torch.zeros(32,1)
                 test_label[anomaly_segments] = 1
                 self.meta['test'].append(torch.load(test_feature))
                 self.meta['labels'].append(test_label)
@@ -153,7 +159,7 @@ class fcnet_loader():
                                        is_vald=self.is_vald,
                                        batch_size=self.batch_size)
         train_test_loader = data.DataLoader(loader,
-                                            batch_size=self.batch_size,# * loader.num_segment,
+                                            batch_size=self.batch_size * loader.num_segment,
                                             shuffle=False,
                                             num_workers=8,
                                             pin_memory=True)
@@ -167,22 +173,39 @@ if __name__ == '__main__':
     # I'm still passing it as argument, not being used
     # Zongyu, review this code and if you agree I will remove test_path
     test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
-    # train_loader = fcnet_loader(norm_path = norm_path,
-    #                            abnorm_path = abnorm_path,
-    #                            test_path = test_path,
-    #                            is_train= True,
-    #                             is_vald=False,
-    #                            batch_size= 30)
-    # train_data = train_loader.load()
-    # for batch in train_data:
-    #     print(batch['normal'].shape)
-    vald_loader = fcnet_loader(norm_path=norm_path,
+    to_train = False
+    to_vald = False
+    to_test = True
+    if to_train:
+        train_loader = fcnet_loader(norm_path = norm_path,
+                                   abnorm_path = abnorm_path,
+                                   test_path = test_path,
+                                   is_train= True,
+                                    is_vald=False,
+                                   batch_size= 30)
+        train_data = train_loader.load()
+        for batch in train_data:
+            print(batch['normal'].shape)
+    if to_vald:
+        vald_loader = fcnet_loader(norm_path=norm_path,
                                 abnorm_path=abnorm_path,
                                 test_path=test_path,
                                 is_train=False,
                                 is_vald=True,
-                                batch_size=32)
-    vald_data = vald_loader.load()
-    for batch in vald_data:
-        print(batch['vald'].shape)
-        print(batch['labels'].shape)
+                                batch_size=30)
+        vald_data = vald_loader.load()
+        for batch in vald_data:
+            print(batch['vald'].shape)
+            print(batch['labels'].shape)
+    if to_test:
+        test_loader = fcnet_loader(norm_path=norm_path,
+                                   abnorm_path=abnorm_path,
+                                   test_path=test_path,
+                                   is_train=False,
+                                   is_vald=False,
+                                   batch_size=30)
+        test_data = test_loader.load()
+        for batch in test_data:
+            print(batch['test'].shape)
+            print(batch['labels'].shape)
+

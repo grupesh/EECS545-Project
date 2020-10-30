@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-def clean_labels():
+def clean_labels(file_name):
     # load test clean normal and anomaly videos
     normal_file_path = os.path.join(os.getcwd(),'..','Anomaly_Detection_splits/Normal_Test_clean.txt')
     normal_files = open(normal_file_path,'r')
@@ -17,7 +17,8 @@ def clean_labels():
     #print(all_videos)
 
     # load validation annotations txt file
-    file_path = os.path.join(os.getcwd(), '..', 'Anomaly_Detection_splits/Temporal_annotations_for_vald.txt')
+
+    file_path = os.path.join(os.getcwd(), '..', 'Anomaly_Detection_splits',file_name)
     file_obj = open(file_path, 'r')
     all_lines = file_obj.readlines()
     new_list = []
@@ -28,7 +29,8 @@ def clean_labels():
         else:
             print(lines.split(' ')[0], 'is greater than 20 minutes, so ignored')
 
-    filename = os.path.join(os.getcwd(), '..', 'Anomaly_Detection_splits/Temporal_annotations_for_vald_clean.txt')
+    new_name = file_name.split('.')[0] + '_clean.txt'
+    filename = os.path.join(os.getcwd(), '..', 'Anomaly_Detection_splits', new_name)
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             for item in new_list:

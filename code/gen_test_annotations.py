@@ -2,6 +2,7 @@ import os
 import numpy as np
 import cv2
 import torch
+from clean_vald_annotations_file import clean_labels
 
 def gen_annotations(f_path):
     """
@@ -138,7 +139,9 @@ def count_frames_manual(video):
     return total
 
 if __name__ == '__main__':
-    f_path = os.path.join(os.getcwd(),"..",'Anomaly_Detection_splits','Temporal_Anomaly_Annotation_for_Testing_Videos.txt')
+    print('Cleaning labels')
+    clean_labels('Temporal_Anomaly_Annotation_for_Testing_Videos.txt')
+    f_path = os.path.join(os.getcwd(),"..",'Anomaly_Detection_splits','Temporal_Anomaly_Annotation_for_Testing_Videos_clean.txt')
     test_annotations = gen_annotations(f_path)
     print('Sample entry in the list : ', test_annotations[16])
     # save test_annotations to saved_data folder

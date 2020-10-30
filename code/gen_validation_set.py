@@ -38,7 +38,7 @@ if __name__ == '__main__':
     vald_set, filename = define_validation_set(test_path)
     print('Samples defined, generating list for easy access')
     print('Cleaning labels')
-    clean_labels()
+    clean_labels('Temporal_annotations_for_vald.txt')
     filename_new = filename.split('.txt')[0] + '_clean.txt'
     vald_set_final = gen_annotations(filename_new)
     write_path = os.path.join(os.getcwd(),'..','saved_data/validation_annotations.pt')
