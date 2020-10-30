@@ -57,8 +57,12 @@ class anomaly_detect_loader(data.Dataset):
         else:
             if is_vald:
                 self.vald_list = torch.load(os.path.join(os.getcwd(),'..','saved_data/validation_annotations.pt'))
-                self.vald_choice = np.random.choice(len(self.vald_list), self.batch_size)
-                self.meta = {'vald': [], 'labels': []}
+                self.norm_list = [item for item in self.vald_list if item['category'] == 'Normal']
+                self.abnorm_list = [item for item in self.vald_list if item not in self.norm_list]
+                self.norm_choice = np.random.choice(len(self.norm_list), self.batch_size)  # uniformly sample
+                self.abnorm_choice = np.random.choice(len(self.abnorm_list), self.batch_size)  # uniformly sample
+                #self.vald_choice = np.random.choice(len(self.vald_list), self.batch_size)
+                self.meta = {'normal': [], 'abnormal': [], 'labels_norm': [], 'labels_abnorm': []}
             else:
                 self.test_list = torch.load(os.path.join(os.getcwd(),'..','saved_data/test_annotations.pt'))
                 self.test_choice = np.random.choice(len(self.test_list), self.batch_size)
@@ -81,24 +85,35 @@ class anomaly_detect_loader(data.Dataset):
             print('shape of normal features: ', self.meta['normal'].shape)
             print('shape of abnormal features: ', self.meta['abnormal'].shape)
         elif self.is_vald:
-            for i in range(len(self.vald_choice)):
-                category = self.vald_list[self.vald_choice[i]]['category']
-                filename_split = self.vald_list[self.vald_choice[i]]['file_path'].split('Video_files')
-                if category == 'Normal':
-                    filename = filename_split[0] + 'features' + filename_split[1]
-                else:
-                    filename = filename_split[0] + 'features/' + category + '/' + category + filename_split[1].split(category)[2]
-                vald_feature = filename.split('.')[0] + '.pt'
-                print('loading validation feature from: ', vald_feature)
-                anomaly_segments = self.vald_list[self.vald_choice[i]]['anomaly_frames']
-                vald_label = torch.zeros(32,1)
-                vald_label[anomaly_segments] = 1
-                self.meta['vald'].append(torch.load(vald_feature))
-                self.meta['labels'].append(vald_label)
-            self.meta['vald'] = torch.stack(self.meta['vald']).reshape(-1, self.meta['vald'][0].shape[-1])
-            self.meta['labels'] = torch.stack(self.meta['labels']).reshape(-1, self.meta['labels'][0].shape[-1])
-            print('shape of validation features: ', self.meta['vald'].shape)
-            print('shape of validation labels: ', self.meta['labels'].shape)
+            for i in range(len(self.norm_choice)):
+                category = self.abnorm_list[self.abnorm_choice[i]]['category']
+                filename_split_norm = self.norm_list[self.norm_choice[i]]['file_path'].split('Video_files')
+                #if category == 'Normal':
+                filename_norm = filename_split_norm[0] + 'features' + filename_split_norm[1]
+                filename_split_abnorm = self.abnorm_list[self.abnorm_choice[i]]['file_path'].split('Video_files')
+                filename_abnorm = filename_split_abnorm[0] + 'features/' + category + '/' + category + filename_split_abnorm[1].split(category)[2]
+                #vald_feature = filename.split('.')[0] + '.pt'
+                norm_feature = filename_norm.split('.')[0] + '.pt'
+                abnorm_feature = filename_abnorm.split('.')[0] + '.pt'
+                print('loading normal features from: ', norm_feature)
+                print('loading abnormal features from: ', abnorm_feature)
+                anomaly_segments_norm = self.norm_list[self.norm_choice[i]]['anomaly_frames']
+                vald_label_norm = torch.zeros(32,1)
+                vald_label_norm[anomaly_segments_norm] = 1
+                anomaly_segments_abnorm = self.abnorm_list[self.abnorm_choice[i]]['anomaly_frames']
+                vald_label_abnorm = torch.zeros(32,1)
+                vald_label_abnorm[anomaly_segments_abnorm] = 1
+                self.meta['normal'].append(torch.load(norm_feature))
+                self.meta['abnormal'].append(torch.load(abnorm_feature))
+                self.meta['labels_norm'].append(vald_label_norm)
+                self.meta['labels_abnorm'].append(vald_label_abnorm)
+            self.meta['normal'] = torch.stack(self.meta['normal']).reshape(-1, self.meta['normal'][0].shape[-1])
+            self.meta['abnormal'] = torch.stack(self.meta['abnormal']).reshape(-1, self.meta['abnormal'][0].shape[-1])
+            #self.meta['vald'] = torch.stack(self.meta['vald']).reshape(-1, self.meta['vald'][0].shape[-1])
+            self.meta['labels_norm'] = torch.stack(self.meta['labels_norm']).reshape(-1, self.meta['labels_norm'][0].shape[-1])
+            self.meta['labels_abnorm'] = torch.stack(self.meta['labels_abnorm']).reshape(-1, self.meta['labels_abnorm'][0].shape[-1])
+            print('shape of validation features: ', self.meta['normal'].shape)
+            print('shape of validation labels: ', self.meta['labels_norm'].shape)
         else:
             for i in range(len(self.test_choice)):
                 category = self.test_list[self.test_choice[i]]['category']
@@ -127,8 +142,10 @@ class anomaly_detect_loader(data.Dataset):
             Meta['normal'] = self.meta['normal'][index, :]
             Meta['abnormal'] = self.meta['abnormal'][index, :]
         elif self.is_vald:
-            Meta['vald'] = self.meta['vald'][index,:]
-            Meta['labels'] = self.meta['labels'][index,:]
+            Meta['normal'] = self.meta['normal'][index,:]
+            Meta['labels_norm'] = self.meta['labels_norm'][index,:]
+            Meta['abnormal'] = self.meta['abnormal'][index, :]
+            Meta['labels_abnorm'] = self.meta['labels_abnorm'][index, :]
         else:
             Meta['test'] = self.meta['test'][index, :]
             Meta['labels'] = self.meta['labels'][index,:]
@@ -174,8 +191,8 @@ if __name__ == '__main__':
     # Zongyu, review this code and if you agree I will remove test_path
     test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
     to_train = False
-    to_vald = False
-    to_test = True
+    to_vald = True
+    to_test = False
     if to_train:
         train_loader = fcnet_loader(norm_path = norm_path,
                                    abnorm_path = abnorm_path,
@@ -192,11 +209,11 @@ if __name__ == '__main__':
                                 test_path=test_path,
                                 is_train=False,
                                 is_vald=True,
-                                batch_size=30)
+                                batch_size=5)
         vald_data = vald_loader.load()
         for batch in vald_data:
-            print(batch['vald'].shape)
-            print(batch['labels'].shape)
+            print(batch['normal'].shape)
+            print(batch['labels_norm'].shape)
     if to_test:
         test_loader = fcnet_loader(norm_path=norm_path,
                                    abnorm_path=abnorm_path,

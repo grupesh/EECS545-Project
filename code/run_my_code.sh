@@ -1,2 +1,2 @@
 export PYTHONPATH=$PWD:$PYTHONPATH
-python3 train.py --batch 2 --lr 1e-3 --epochs 100
+python train.py --batch 4 --batch_vald 2 --lr 1e-3 --epochs 100
