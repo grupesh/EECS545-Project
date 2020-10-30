@@ -8,6 +8,7 @@ norm_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Normal_
 abnorm_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Train_clean.txt')
 parser = argparse.ArgumentParser()
 parser.add_argument('--batch', type=int, help='the train batch size', default=1)
+parser.add_argument('--batch_vald', type=int, help='the validation batch size', default=1)
 parser.add_argument('--lr', type=float, help='the learning rate', default=2e-3)
 parser.add_argument('--epochs', type=int, help='training epochs', default=50)
 parser.add_argument('--continue_train', action='store_true', help='load checkpoint and continue training')
@@ -18,6 +19,7 @@ args = parser.parse_args()
 class train_fcnet():
     def __init__(self,
                  batch_size,
+                 batch_size_vald,
                  learning_rate,
                  num_epochs,
                  continue_train):
@@ -51,6 +53,7 @@ class train_fcnet():
                                     learning_rate= learning_rate,
                                     num_epochs= num_epochs,
                                     batch_size= batch_size,
+                                     batch_size_vald = batch_size_vald,
                                     ckpt_dir= self.ckpt_dir)
     def train(self):
         self.trainer.train()
@@ -61,6 +64,7 @@ class train_fcnet():
                 yield os.path.join(cur_path, filename)
 def main():
     fcnet = train_fcnet(batch_size= args.batch,
+                        batch_size_vald=args.batch_vald,
                         learning_rate= args.lr,
                         num_epochs= args.epochs,
                         continue_train= args.continue_train)
