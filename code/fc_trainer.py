@@ -71,11 +71,11 @@ class fcnet_trainer:
             self.model.train()
             start_t = time.time()
             train_loader = fcnet_loader(norm_path= self.norm_path,
-                                       abnorm_path= self.abnorm_path,
-                                       test_path= None,
-                                       is_train= True,
+                                        abnorm_path= self.abnorm_path,
+                                        is_train= True,
                                         is_vald = False,
-                                       batch_size= self.batch_size)
+                                        batch_size= self.batch_size,
+                                        verb= False)
             train_data = train_loader.load()
             # only one batch
             for iter_num, batch in enumerate(train_data):
@@ -98,10 +98,10 @@ class fcnet_trainer:
             self.model.eval()
             vald_loader = fcnet_loader(norm_path=self.norm_path,
                                        abnorm_path=self.abnorm_path,
-                                       test_path=None,
                                        is_train=False,
                                        is_vald=True,
-                                       batch_size=self.batch_size_vald)
+                                       batch_size=self.batch_size_vald,
+                                       verb= False)
             vald_data = vald_loader.load()
             for iter_num, batch in enumerate(vald_data):
                 self.optimizer.zero_grad()

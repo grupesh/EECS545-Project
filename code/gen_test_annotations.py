@@ -28,21 +28,22 @@ def gen_annotations(f_path):
         category_name = line.split(' ')[2]
         # print(category_name)
 	    # video_path is location of video files in database
-        video_path = 'G:/Shared drives/EECS 545 - ML Project/data/Video_files/'
-        if category_name in ["Arson", "Arrest", "Abuse", "Assault"]:
-            folder_name = 'Anomaly-Videos-Part-1/' + category_name + '/'
-        elif category_name in ["Explosion", "Fighting", "Burglary"]:
-            folder_name = 'Anomaly-Videos-Part-2/' + category_name + '/'
-        elif category_name in ["Shooting", "RoadAccidents", "Robbery"]:
-            folder_name = 'Anomaly-Videos-Part-3/' + category_name + '/'
-        elif category_name in ["Shoplifting", "Stealing", "Vandalism"]:
-            folder_name = 'Anomaly-Videos-Part-4/' + category_name + '/'
-        elif category_name == "Normal":
-            folder_name = 'Testing_Normal_Videos_Anomaly/'
-        else:
-            raise Exception('Category :', category_name, ' name not in defined categories')
-
-        file_path = video_path + folder_name + file_name
+        # video_path = os.path.abspath(os.path.join(os.getcwd(),'..','Videos',category_name, file_name))
+        # if category_name in ["Arson", "Arrest", "Abuse", "Assault"]:
+        #     folder_name = '/Anomaly-Videos-Part-1/' + category_name + '/'
+        # elif category_name in ["Explosion", "Fighting", "Burglary"]:
+        #     folder_name = '/Anomaly-Videos-Part-2/' + category_name + '/'
+        # elif category_name in ["Shooting", "RoadAccidents", "Robbery"]:
+        #     folder_name = '/Anomaly-Videos-Part-3/' + category_name + '/'
+        # elif category_name in ["Shoplifting", "Stealing", "Vandalism"]:
+        #     folder_name = '/Anomaly-Videos-Part-4/' + category_name + '/'
+        # elif category_name == "Normal":
+        #     folder_name = '/Testing_Normal_Videos_Anomaly/'
+        # else:
+        #     raise Exception('Category :', category_name, ' name not in defined categories')
+        if category_name == 'Normal':
+            category_name = 'Testing_Normal_Videos_Anomaly'
+        file_path = os.path.abspath(os.path.join(os.getcwd(),'..','Videos',category_name, file_name))
         # print(file_path)
         # num_frames = torchvision.io.read_video(file_path)[0].shape[0]
         num_frames = count_frames(file_path)
@@ -145,6 +146,8 @@ if __name__ == '__main__':
     test_annotations = gen_annotations(f_path)
     print('Sample entry in the list : ', test_annotations[16])
     # save test_annotations to saved_data folder
+    if not os.path.exists(os.path.join(os.getcwd(),"..",'saved_data')):
+        os.mkdir(os.path.join(os.getcwd(),"..",'saved_data'))
     write_path = os.path.join(os.getcwd(),"..",'saved_data','test_annotations.pt')
     if not os.path.exists(write_path):
         torch.save(test_annotations,write_path)

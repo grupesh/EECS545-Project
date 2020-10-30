@@ -30,6 +30,7 @@ class train_fcnet():
         if not os.path.exists(self.ckpt_dir):
             os.mkdir(self.ckpt_dir)
         self.model = FC_net()
+        # print(continue_train)
         if continue_train:
             latest_ckpt = max(self.all_files_under(self.ckpt_dir), key=os.path.getmtime)
             try:
