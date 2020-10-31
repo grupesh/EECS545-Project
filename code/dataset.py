@@ -40,13 +40,15 @@ class anomaly_detect_loader(data.Dataset):
                  is_train=True,
                  is_vald=False,
                  batch_size=30,
-                 verb = True):
+                 verb = True,
+                 root_path=None):
         super(anomaly_detect_loader, self).__init__()
         self.is_train = is_train
         self.is_vald = is_vald
         self.num_segment = 32
         self.batch_size = batch_size
         self.verb = verb
+        self.root_path = root_path
         if self.is_train:
             self.norm_list = np.loadtxt(norm_path, dtype= str)
             self.abnorm_list = np.loadtxt(abnorm_path, dtype = str)
@@ -71,7 +73,10 @@ class anomaly_detect_loader(data.Dataset):
         self.load_features()
 
     def load_features(self):
-        root_path = os.path.abspath(os.path.join(os.getcwd(), ".."))
+        if self.root_path is not None:
+            root_path = self.root_path
+        else:
+            root_path = os.path.abspath(os.path.join(os.getcwd(), ".."))
         # root_path = 'G:\Shared drives\EECS 545 - ML Project\data'
         if self.is_train:
             for i in range(len(self.norm_choice)):
@@ -92,11 +97,15 @@ class anomaly_detect_loader(data.Dataset):
             for i in range(len(self.norm_choice)):
                 category = self.abnorm_list[self.abnorm_choice[i]]['category']
                 filename_split_norm = self.norm_list[self.norm_choice[i]]['file_path'].split('/Videos/')
+                filename_split_abnorm = self.abnorm_list[self.abnorm_choice[i]]['file_path'].split('/Videos/')
+                if self.root_path is not None:
+                    root_path = self.root_path
+                else:
+                    root_path = filename_split_norm[0]
                 # print(filename_split_norm)
                 #if category == 'Normal':
-                filename_norm = filename_split_norm[0] + '/features/' + filename_split_norm[1]
-                filename_split_abnorm = self.abnorm_list[self.abnorm_choice[i]]['file_path'].split('/Videos/')
-                filename_abnorm = filename_split_abnorm[0] + '/features/' + category + '/' + category + filename_split_abnorm[1].split(category)[2]
+                filename_norm = root_path + '/features/' + filename_split_norm[1]
+                filename_abnorm = root_path + '/features/' + category + '/' + category + filename_split_abnorm[1].split(category)[2]
                 #vald_feature = filename.split('.')[0] + '.pt'
                 norm_feature = filename_norm.split('.')[0] + '.pt'
                 abnorm_feature = filename_abnorm.split('.')[0] + '.pt'
@@ -125,11 +134,15 @@ class anomaly_detect_loader(data.Dataset):
             for i in range(len(self.test_choice)):
                 category = self.test_list[self.test_choice[i]]['category']
                 filename_split = self.test_list[self.test_choice[i]]['file_path'].split('/Videos/')
+                if self.root_path is not None:
+                    root_path = self.root_path
+                else:
+                    root_path = filename_split[0]
                 # print(filename_split)
                 if category == 'Testing_Normal_Videos_Anomaly':
-                    filename = filename_split[0] + '/features/' + filename_split[1]
+                    filename = root_path + '/features/' + filename_split[1]
                 else:
-                    filename = filename_split[0] + '/features/' + category + '/' + category + \
+                    filename = root_path + '/features/' + category + '/' + category + \
                                filename_split[1].split(category)[2]
 
                 test_feature = filename.split('.')[0] + '.pt'
@@ -171,20 +184,23 @@ class fcnet_loader():
                  is_train=True,
                  is_vald=False,
                  batch_size=30,
-                 verb = True):
+                 verb = True,
+                 root_path = None):
         self.norm_path = norm_path
         self.abnorm_path = abnorm_path
         self.is_train = is_train
         self.is_vald = is_vald
         self.batch_size = batch_size
         self.verb = verb
+        self.root_path = root_path
     def load(self):
         loader = anomaly_detect_loader(norm_path=self.norm_path,
                                        abnorm_path=self.abnorm_path,
                                        is_train=self.is_train,
                                        is_vald=self.is_vald,
                                        batch_size=self.batch_size,
-                                       verb = self.verb)
+                                       verb = self.verb,
+                                       root_path= self.root_path)
         train_test_loader = data.DataLoader(loader,
                                             batch_size=self.batch_size * loader.num_segment,
                                             shuffle=False,
@@ -201,15 +217,17 @@ if __name__ == '__main__':
     # Zongyu, review this code and if you agree I will remove test_path
     # Zongyu: test_path is removed!
     # test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
-    to_train = False
-    to_vald = True
+    to_train = True
+    to_vald = False
     to_test = False
     if to_train:
         train_loader = fcnet_loader(norm_path = norm_path,
                                    abnorm_path = abnorm_path,
                                    is_train= True,
                                     is_vald=False,
-                                   batch_size= 30)
+                                   batch_size= 30,
+                                    verb=True,
+                                    root_path='G:/Shared drives/EECS 545 - ML Project/data')
         train_data = train_loader.load()
         for batch in train_data:
             print(batch['normal'].shape)
@@ -219,7 +237,8 @@ if __name__ == '__main__':
                                 is_train=False,
                                 is_vald=True,
                                 batch_size=5,
-                                verb= False)
+                                verb= False,
+                                   root_path=None)
         vald_data = vald_loader.load()
         for batch in vald_data:
             print(batch['normal'].shape)
@@ -229,7 +248,8 @@ if __name__ == '__main__':
                                    abnorm_path=abnorm_path,
                                    is_train=False,
                                    is_vald=False,
-                                   batch_size=30)
+                                   batch_size=30,
+                                   root_path=None)
         test_data = test_loader.load()
         for batch in test_data:
             print(batch['test'].shape)
