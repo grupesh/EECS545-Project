@@ -132,7 +132,7 @@ class fcnet_trainer:
                 else:
                     save_checkpoint(self.model.state_dict(), is_best=True,
                                     checkpoint_dir= self.ckpt_dir)
-            if (i + 1) % 10 == 0:
+            if (i + 1) % 100 == 0:
                 print('Save the current model to checkpoint!')
                 if torch.cuda.is_available():
                     if torch.cuda.device_count() > 1:
