@@ -218,8 +218,8 @@ if __name__ == '__main__':
     # Zongyu: test_path is removed!
     # test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
     to_train = False
-    to_vald = True
-    to_test = False
+    to_vald = False
+    to_test = True
     if to_train:
         train_loader = fcnet_loader(norm_path = norm_path,
                                    abnorm_path = abnorm_path,
@@ -249,7 +249,8 @@ if __name__ == '__main__':
                                    is_train=False,
                                    is_vald=False,
                                    batch_size=30,
-                                   root_path=None)
+                                   verb=True,
+                                   root_path='G:/Shared drives/EECS 545 - ML Project/data')
         test_data = test_loader.load()
         for batch in test_data:
             print(batch['test'].shape)

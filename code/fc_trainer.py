@@ -16,13 +16,15 @@ class fcnet_trainer:
                  num_epochs=20,
                  batch_size=8,
                  batch_size_vald=4,
-                 ckpt_dir = ''
+                 ckpt_dir = '',
+                 root_path=None
                  ):
         self.model = model
         self.num_epochs = num_epochs
         self.norm_path = norm_path
         self.abnorm_path = abnorm_path
         self.ckpt_dir = ckpt_dir
+        self.root_path = root_path
         self.optimizer = torch.optim.Adam(
             filter(lambda p: p.requires_grad, self.model.parameters()),
             learning_rate)  # leave betas and eps by default
@@ -75,7 +77,8 @@ class fcnet_trainer:
                                         is_train= True,
                                         is_vald = False,
                                         batch_size= self.batch_size,
-                                        verb= False)
+                                        verb= False,
+                                        root_path = self.root_path)
             train_data = train_loader.load()
             # only one batch
             for iter_num, batch in enumerate(train_data):
@@ -101,7 +104,8 @@ class fcnet_trainer:
                                        is_train=False,
                                        is_vald=True,
                                        batch_size=self.batch_size_vald,
-                                       verb= False)
+                                       verb= False,
+                                       root_path = self.root_path)
             vald_data = vald_loader.load()
             for iter_num, batch in enumerate(vald_data):
                 self.optimizer.zero_grad()

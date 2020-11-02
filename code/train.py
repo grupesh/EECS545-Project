@@ -14,6 +14,7 @@ parser.add_argument('--epochs', type=int, help='training epochs', default=50)
 parser.add_argument('--continue_train', action='store_true', help='load checkpoint and continue training')
 parser.add_argument("--mode", default='client')
 parser.add_argument("--port", default=50093)
+parser.add_argument("--root_path", default=None)
 args = parser.parse_args()
 
 class train_fcnet():
@@ -22,9 +23,11 @@ class train_fcnet():
                  batch_size_vald,
                  learning_rate,
                  num_epochs,
-                 continue_train):
+                 continue_train,
+                 root_path = None):
         # self.result_dir = os.path.join(os.getcwd(), '..', 'result')
         self.ckpt_dir = os.path.join(os.getcwd(), '..', 'checkpoint')
+        self.root_path = root_path
         # if not os.path.exists(self.result_dir):
             # os.mkdir(self.result_dir)
         if not os.path.exists(self.ckpt_dir):
@@ -55,7 +58,8 @@ class train_fcnet():
                                     num_epochs= num_epochs,
                                     batch_size= batch_size,
                                      batch_size_vald = batch_size_vald,
-                                    ckpt_dir= self.ckpt_dir)
+                                    ckpt_dir= self.ckpt_dir,
+                                     root_path = self.root_path)
     def train(self):
         self.trainer.train()
     def all_files_under(self, path):
@@ -68,7 +72,8 @@ def main():
                         batch_size_vald=args.batch_vald,
                         learning_rate= args.lr,
                         num_epochs= args.epochs,
-                        continue_train= args.continue_train)
+                        continue_train= args.continue_train,
+                        root_path = args.root_path)
     fcnet.train()
 if __name__ == '__main__':
     main()
