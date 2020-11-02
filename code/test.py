@@ -8,6 +8,7 @@ import argparse
 import os
 from sklearn import metrics
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 
 test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
@@ -44,7 +45,8 @@ class test_fcnet:
 
     def my_accuracy(self,
                     scores=None,
-                    labels=None):
+                    labels=None,
+                    plot=True):
         fpr, tpr, threshold = metrics.roc_curve(labels.detach().cpu().numpy(), scores.detach().cpu().numpy())
         optim_idx = np.argmax(tpr - fpr)
         optim_threshold = threshold[optim_idx]
@@ -53,6 +55,19 @@ class test_fcnet:
         roc_auc = metrics.roc_auc_score(labels.detach().cpu().numpy(), scores.detach().cpu().numpy())
         optim_fpr = fpr[optim_idx]
         optim_tpr = tpr[optim_idx]
+        if plot:
+            plt.figure()
+            plt.plot(fpr, tpr, color='darkorange',
+                     label='ROC curve (area = %0.2f)' % roc_auc)
+            plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+            plt.xlim([0.0, 1.0])
+            plt.ylim([0.0, 1.05])
+            plt.xlabel('False Positive Rate')
+            plt.ylabel('True Positive Rate')
+            plt.title('Receiver operating characteristic')
+            plt.legend(loc="lower right")
+            plt.show()
+            plt.savefig(os.path.join(os.getcwd(),'..','results','auc_plot.png'))
         return roc_auc, optim_threshold, optim_fpr, optim_tpr
 
     def test(self):
@@ -72,7 +87,7 @@ class test_fcnet:
                                    is_train=False,
                                    is_vald=False,
                                    batch_size=self.batch_size,
-                                   verb= True,
+                                   verb= False,
                                    root_path = self.root_path)
         test_data = test_loader.load()
         for iter_num, batch in enumerate(test_data):
@@ -81,6 +96,7 @@ class test_fcnet:
                 # print('key: {}, maximum value: {}'.format(key, torch.max(batch[key]).item()))
                 batch[key] = batch[key].to(self.device)
             scores = self.model.forward(batch['test']).reshape(-1)
+            print('Size of each test batch that is processed',batch['test'].shape)
             labels = batch['labels'].reshape(-1)
             print(labels.shape)
             auc,optim_thresh,optim_fpr,optim_tpr = self.my_accuracy(scores = scores, labels = labels)

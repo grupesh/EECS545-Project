@@ -87,7 +87,7 @@ class fcnet_trainer:
                     # print('key: {}, maximum value: {}'.format(key, torch.max(batch[key]).item()))
                     batch[key] = batch[key].to(self.device)
                 norm_scores = self.model.forward(batch['normal'])
-                #print(norm_scores.shape)
+                print('Size of each batch over which loss is computed : ', batch['normal'].shape)
                 abnorm_scores = self.model.forward(batch['abnormal'])
                 loss = self.my_criterion(norm_scores= norm_scores,
                                          abnorm_scores = abnorm_scores)
@@ -95,6 +95,7 @@ class fcnet_trainer:
                 loss.backward()
                 self.optimizer.step()
                 self.lr_scheduler.step(loss)
+            print(iter_num)
             end_t = time.time()
 
             print('Running eval on validation set')
