@@ -217,20 +217,20 @@ if __name__ == '__main__':
     # Zongyu, review this code and if you agree I will remove test_path
     # Zongyu: test_path is removed!
     # test_path = os.path.join(os.getcwd(), "..", 'Anomaly_Detection_splits', 'Anomaly_Test.txt')
-    to_train = False
+    to_train = True
     to_vald = False
-    to_test = True
+    to_test = False
     if to_train:
         train_loader = fcnet_loader(norm_path = norm_path,
                                    abnorm_path = abnorm_path,
                                    is_train= True,
                                     is_vald=False,
-                                   batch_size= 30,
+                                   batch_size=2,
                                     verb=True,
-                                    root_path=None)#'G:/Shared drives/EECS 545 - ML Project/data')
+                                    root_path='G:/Shared drives/EECS 545 - ML Project/data')
         train_data = train_loader.load()
-        for batch in train_data:
-            print(batch['normal'].shape)
+        for iter_num,batch in enumerate(train_data):
+            print(iter_num,batch['normal'].shape)
     if to_vald:
         vald_loader = fcnet_loader(norm_path=norm_path,
                                 abnorm_path=abnorm_path,
